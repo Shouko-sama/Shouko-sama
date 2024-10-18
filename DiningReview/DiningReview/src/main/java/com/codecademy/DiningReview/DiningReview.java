@@ -1,0 +1,87 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.codecademy.DiningReview;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import com.example.DiningReviewApi.Restaurant.Restaurant;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+
+@Entity
+@Table(name = "DINING_REVIEW")
+@Getter
+@Setter
+@NoArgsConstructor
+public class DiningReview {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long diningReviewId;
+
+	@Column(name = "reviewer_name")
+	private String reviewerName;
+
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "restaurant_Id", nullable = false)
+	@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "restaurant_Id")
+	@JsonIgnore
+	private Restaurant restaurant;
+
+	// using attribute converter to autoApply enumRules 
+	//instead of @Enumerated() bcos, custom enumValues to used 
+	//for further computations
+	@Column(name = "peanut_review_score")
+	private ReviewScore peanutAllergyScore;
+
+	// using attribute converter to autoApply enumRules
+	@Column(name = "egg_review_score")
+	private ReviewScore eggAllergyScore;
+
+	// using attribute converter to autoApply enumRules
+	@Column(name = "diary_review_score")
+	private ReviewScore dairyAllergyScore;
+
+	@Column(name = "commentary")
+	private String commentary;
+
+	// using attribute converter to autoApply enumRules
+	@Column(name = "review_status")
+	private Status status;
+
+	// Implemented this custom toString() to see the error Thrown when @Data
+	// annotation is used
+	// this is because it causes a recursive toString() call on restaurant and back
+	// to diningReviewEntity
+	// So uncommenting the toString() and getting [Restaurant] directly throws the
+	// stackOverFlowError,but getting
+	// a specific field from [Restaurant] entity works fine
+
+	public String toString() {
+		return "DiningReview = [reviewId" + diningReviewId + " : ReviewerName" + reviewerName + " : RestaurantID"
+				+ restaurant.getRestaurant_Id() + " :" + " ]";
+	}
+
+}

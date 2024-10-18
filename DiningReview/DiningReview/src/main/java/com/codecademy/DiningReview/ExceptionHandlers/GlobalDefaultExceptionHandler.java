@@ -1,0 +1,45 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.codecademy.DiningReview.ExceptionHandlers;
+
+import java.util.Date;
+
+import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class GlobalDefaultExceptionHandler {
+	
+	@ExceptionHandler(NotFoundException.class)
+	public ResponseEntity<ErrorDTO> generateNotFoundException(NotFoundException nfex){
+		ErrorDTO errorDTO = new ErrorDTO();
+		errorDTO.setMessage(nfex.getMessage());
+		errorDTO.setStatus(String.valueOf(nfex.getStatus().value()));
+		errorDTO.setTime(new Date().toString());
+		
+		return new ResponseEntity<ErrorDTO>(errorDTO, nfex.getStatus());
+	}
+	
+	@ExceptionHandler(AlreadyExistException.class)
+	public ResponseEntity<ErrorDTO> generateAlreadyExistsException(AlreadyExistException alex){
+		ErrorDTO errorDTO = new ErrorDTO();
+		errorDTO.setMessage(alex.getMessage());
+		errorDTO.setStatus(String.valueOf(alex.getStatus().value()));
+		errorDTO.setTime(new Date().toString());
+		
+		return new ResponseEntity<ErrorDTO>(errorDTO, alex.getStatus());
+	}
+	
+	@ExceptionHandler(ConversionFailedException.class)
+	public ResponseEntity<ErrorDTO> handleConflict(RuntimeException ex){
+		ErrorDTO errorDTO = new ErrorDTO();
+		errorDTO.setMessage(ex.getMessage());
+		errorDTO.setTime(new Date().toString());
+		return new ResponseEntity<ErrorDTO>(errorDTO, HttpStatus.BAD_REQUEST);
+	}
+}

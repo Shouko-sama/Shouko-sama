@@ -1,0 +1,92 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.codecademy.Restaurant;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.DiningReviewApi.DataModels.RestaurantDTO;
+import com.example.DiningReviewApi.DataModels.RestaurantSearchDTO;
+import com.example.DiningReviewApi.ExceptionHandlers.AlreadyExistException;
+import com.example.DiningReviewApi.ExceptionHandlers.NotFoundException;
+import jakarta.transaction.Transactional;
+
+@Transactional
+@Service
+public class RestaurantService {
+
+	@Autowired
+	RestaurantRepository restaurantRepository;
+
+	public Restaurant createRestaurant(RestaurantDTO restaurantDataModel) {
+		// submit new restaurant entry as user
+		// if restaurant with sameName and zipCode exists throw AlreadyExistException
+
+		RestaurantAddress restaurantAddress = new RestaurantAddress();
+		restaurantAddress.setName(restaurantDataModel.getRestaurantAddress().getName());
+		restaurantAddress.setZipCode(restaurantDataModel.getRestaurantAddress().getZipCode());
+
+		Restaurant restaurant = new Restaurant();
+		restaurant.setRestaurantAddress(restaurantAddress);
+		/*
+		 * restaurant.setPeanutAllergyScore(restaurantDataModel.getEggAllergyScore());
+		 * restaurant.setEggAllergyScore(restaurantDataModel.getEggAllergyScore());
+		 * restaurant.setDairyAllergyScore(restaurantDataModel.getDairyAllergyScore());
+		 * restaurant.setOverAllRestaurantScore(restaurantDataModel.
+		 * getOverAllRestaurantScore());
+		 */
+
+		Optional<Restaurant> retrieveRestaurantIfAlreadyExists = restaurantRepository
+				.findByRestaurantAddress(restaurantAddress);
+
+		if (retrieveRestaurantIfAlreadyExists.isPresent()) {
+			throw new AlreadyExistException("The given restaurant already exists. Cannot created restaurant Entry");
+		} else {
+			restaurantRepository.save(restaurant);
+			return restaurant;
+		}
+	}
+	
+	public Iterable<Restaurant> fetchAllRestaurants(){
+		return restaurantRepository.findAll();
+	}
+
+	public Restaurant fetchRestaurantDetailsById(RestaurantSearchDTO restaurantSearchModel) {
+		// fetch details of a restaurant given its uniqueId
+
+		Optional<Restaurant> fetchRestaurantById = restaurantRepository.findById(restaurantSearchModel.getId());
+
+		if (!fetchRestaurantById.isPresent()) {
+			throw new NotFoundException("Restaurant with the givenId does not exist");
+		} else {
+			Restaurant restaurant = fetchRestaurantById.get();
+			return restaurant;
+		}
+	}
+
+	public List<Restaurant> fetchRestaurantsByZipCodeWithReviews(RestaurantSearchDTO restaurantSearchModel) {
+		// fetch restaurants by ZipCode with at least one user submitted Review		
+		Optional<List<Restaurant>> fetchRestaurantsByZipCode = restaurantRepository
+				.findByRestaurantAddressZipCodeOrderByRestaurantAddressNameDesc(restaurantSearchModel.getZipCode().get());
+
+		List<Restaurant> restaurants = fetchRestaurantsByZipCode.get();
+		
+		List<Restaurant> restaurantsWithReviews = new LinkedList<>();
+
+		// now verify if restaurant has any reviews
+		restaurants.forEach(restaurant -> {
+			if (restaurant.getDiningReview().size() > 0) {
+				System.out.println(restaurant);
+				restaurantsWithReviews.add(restaurant);
+			}
+		});
+		
+		return restaurantsWithReviews;
+	}
+}
